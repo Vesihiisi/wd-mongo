@@ -4,7 +4,7 @@ from pymongo import MongoClient
 import pywikibot as pwb
 from pywikibot import pagegenerators as pg
 import json
-
+from datetime import datetime
 
 
 def getQuery(filename):
@@ -23,7 +23,9 @@ def main():
     collection = database[args.collection]
     site = pwb.Site('wikidata', 'wikidata')
     query = getQuery(args.query)
+    startTime = datetime.now()
     generator = pg.WikidataSPARQLPageGenerator(query, site=site)
+    counter = 0
     for item in generator:
         try:
             jsonItem = {}
@@ -54,14 +56,15 @@ def main():
             jsonItem["descriptions"] = descriptions
             jsonItem["claims"] = claimsClean
             if collection.find({"_id" : jsonItem["_id"]}).count() == 0:
-                print("{} Not yet in database".format(jsonItem["_id"]))
                 post_id = collection.insert_one(jsonItem).inserted_id
+                counter = counter + 1
+                print("Added item {} : {}.".format(counter, jsonItem["_id"]))
             else:
                 print("{} already in database".format(jsonItem["_id"]))
         except (pwb.IsRedirectPage, pwb.NoPage):
             pass
 
-    print("db has {} items".format(collection.count()))
-
+    print("{} elapsed".format(datetime.now() - startTime))
+    print("Done! db has {} items".format(collection.count()))
 if __name__ == "__main__":
     main()
