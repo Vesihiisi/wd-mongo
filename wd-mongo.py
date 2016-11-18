@@ -58,7 +58,8 @@ def main():
             if collection.find({"_id" : jsonItem["_id"]}).count() == 0:
                 post_id = collection.insert_one(jsonItem).inserted_id
                 counter = counter + 1
-                print("Added item {} : {}.".format(counter, jsonItem["_id"]))
+                if counter%100 == 0:
+                    print("Added item {} : {}.".format(counter, jsonItem["_id"]))
             else:
                 print("{} already in database".format(jsonItem["_id"]))
         except (pwb.IsRedirectPage, pwb.NoPage):
