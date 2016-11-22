@@ -27,6 +27,26 @@ def processArgs():
     parser.add_argument("-d", "--database", default=None, required=True)
     return parser.parse_args()
 
+def processClaims(claims):
+    claimsClean = {}
+    for claim in claims:
+        claimList = []
+        for x in claims[claim]:
+            xTarget = x.getTarget()
+            if (type(xTarget) == pwb.page.ItemPage or type(xTarget) == pwb.page.PropertyPage):
+                targetClaim = xTarget.getID()
+            elif (type(xTarget) == pwb.page.FilePage ):
+                targetClaim = xTarget.fileUrl()
+            elif(type(xTarget) == pwb.WbTime):
+                targetClaim = xTarget.toTimestr()
+            elif(type(xTarget) == pwb.Coordinate or type(xTarget) == pwb.WbQuantity or type(xTarget) == pwb.WbMonolingualText):
+                targetClaim = xTarget.toWikibase()
+            else:
+                targetClaim = x.getTarget()
+            claimList.append(targetClaim)
+        claimsClean[claim] = claimList
+    return claimsClean
+
 def main():
     args = processArgs()
     collection = prepareCollection(args.database, args.collection)
@@ -38,23 +58,7 @@ def main():
             labels = item_dict["labels"]
             descriptions = item_dict["descriptions"]
             claims = item_dict["claims"]
-            claimsClean = {}
-            for claim in claims:
-                claimList = []
-                for x in claims[claim]:
-                    xTarget = x.getTarget()
-                    if (type(xTarget) == pwb.page.ItemPage or type(xTarget) == pwb.page.PropertyPage):
-                        targetClaim = xTarget.getID()
-                    elif (type(xTarget) == pwb.page.FilePage ):
-                        targetClaim = xTarget.fileUrl()
-                    elif(type(xTarget) == pwb.WbTime):
-                        targetClaim = xTarget.toTimestr()
-                    elif(type(xTarget) == pwb.Coordinate or type(xTarget) == pwb.WbQuantity or type(xTarget) == pwb.WbMonolingualText):
-                        targetClaim = xTarget.toWikibase()
-                    else:
-                        targetClaim = x.getTarget()
-                    claimList.append(targetClaim)
-                claimsClean[claim] = claimList
+            claimsClean = processClaims(claims)
             jsonItem = {}
             jsonItem["_id"] = item.getID()
             jsonItem["labels"] = labels
