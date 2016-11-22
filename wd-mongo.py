@@ -25,7 +25,6 @@ def main():
     query = getQuery(args.query)
     startTime = datetime.now()
     generator = pg.WikidataSPARQLPageGenerator(query, site=site)
-    counter = 0
     for item in generator:
         try:
             jsonItem = {}
@@ -57,11 +56,6 @@ def main():
             jsonItem["claims"] = claimsClean
             if collection.find({"_id" : jsonItem["_id"]}).count() == 0:
                 post_id = collection.insert_one(jsonItem).inserted_id
-                counter = counter + 1
-                if counter%100 == 0:
-                    print("Added item {} : {}.".format(counter, jsonItem["_id"]))
-            else:
-                print("{} already in database".format(jsonItem["_id"]))
         except (pwb.IsRedirectPage, pwb.NoPage):
             pass
 
