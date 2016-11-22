@@ -11,6 +11,10 @@ def getQuery(filename):
     with open(filename, 'r') as query_file:
         return query_file.read().replace('\n', '')
 
+def prepareCollection(databaseName, collectionName):
+    client = MongoClient()
+    database = client[databaseName]
+    return database[collectionName]
 
 def main():
     parser = argparse.ArgumentParser()
@@ -18,9 +22,7 @@ def main():
     parser.add_argument("-c", "--collection", default=None, required=True)
     parser.add_argument("-d", "--database", default=None, required=True)
     args = parser.parse_args()
-    client = MongoClient()
-    database = client[args.database]
-    collection = database[args.collection]
+    collection = prepareCollection(args.database, args.collection)
     site = pwb.Site('wikidata', 'wikidata')
     query = getQuery(args.query)
     startTime = datetime.now()
@@ -30,6 +32,7 @@ def main():
             jsonItem = {}
             item_dict = item.get()
             itemID = item.getID()
+            print(itemID)
             labels = item_dict["labels"]
             descriptions = item_dict["descriptions"]
             claims = item_dict["claims"]
