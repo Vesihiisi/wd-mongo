@@ -64,15 +64,12 @@ def main():
     for item in generator:
         try:
             item_dict = item.get()
-            labels = item_dict["labels"]
-            descriptions = item_dict["descriptions"]
             claims = item_dict["claims"]
-            claimsClean = processClaims(claims)
             jsonItem = {}
             jsonItem["_id"] = item.getID()
-            jsonItem["labels"] = labels
-            jsonItem["descriptions"] = descriptions
-            jsonItem["claims"] = claimsClean
+            jsonItem["labels"] = labels = item_dict["labels"]
+            jsonItem["descriptions"] = item_dict["descriptions"]
+            jsonItem["claims"] = processClaims(claims)
             if itemInCollection(jsonItem["_id"], collection) == False:
                 insertItem(jsonItem, collection)
         except (pwb.IsRedirectPage, pwb.NoPage):
