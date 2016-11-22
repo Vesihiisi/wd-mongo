@@ -16,23 +16,25 @@ def prepareCollection(databaseName, collectionName):
     database = client[databaseName]
     return database[collectionName]
 
-def main():
+def createGenerator(queryFile, site):
+    query = getQuery(queryFile)
+    return pg.WikidataSPARQLPageGenerator(query, site=site)
+
+def processArgs():
     parser = argparse.ArgumentParser()
     parser.add_argument("-q", "--query", default=None, required=True)
     parser.add_argument("-c", "--collection", default=None, required=True)
     parser.add_argument("-d", "--database", default=None, required=True)
-    args = parser.parse_args()
+    return parser.parse_args()
+
+def main():
+    args = processArgs()
     collection = prepareCollection(args.database, args.collection)
-    site = pwb.Site('wikidata', 'wikidata')
-    query = getQuery(args.query)
     startTime = datetime.now()
-    generator = pg.WikidataSPARQLPageGenerator(query, site=site)
+    generator = createGenerator(args.query, pwb.Site('wikidata', 'wikidata'))
     for item in generator:
         try:
-            jsonItem = {}
             item_dict = item.get()
-            itemID = item.getID()
-            print(itemID)
             labels = item_dict["labels"]
             descriptions = item_dict["descriptions"]
             claims = item_dict["claims"]
@@ -53,7 +55,8 @@ def main():
                         targetClaim = x.getTarget()
                     claimList.append(targetClaim)
                 claimsClean[claim] = claimList
-            jsonItem["_id"] = itemID
+            jsonItem = {}
+            jsonItem["_id"] = item.getID()
             jsonItem["labels"] = labels
             jsonItem["descriptions"] = descriptions
             jsonItem["claims"] = claimsClean
@@ -64,5 +67,6 @@ def main():
 
     print("{} elapsed".format(datetime.now() - startTime))
     print("Done! db has {} items".format(collection.count()))
+
 if __name__ == "__main__":
     main()
