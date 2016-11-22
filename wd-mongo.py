@@ -56,6 +56,16 @@ def itemInCollection(itemID, collection):
 def insertItem(jsonItem, collection):
     collection.insert_one(jsonItem)
 
+def wdItemToJson(WDItem):
+    item_dict = item.get()
+    claims = item_dict["claims"]
+    jsonItem = {}
+    jsonItem["_id"] = item.getID()
+    jsonItem["labels"] = labels = item_dict["labels"]
+    jsonItem["descriptions"] = item_dict["descriptions"]
+    jsonItem["claims"] = processClaims(claims)
+    return jsonItem
+
 def main():
     args = processArgs()
     collection = prepareCollection(args.database, args.collection)
@@ -63,13 +73,7 @@ def main():
     generator = createGenerator(args.query, pwb.Site('wikidata', 'wikidata'))
     for item in generator:
         try:
-            item_dict = item.get()
-            claims = item_dict["claims"]
-            jsonItem = {}
-            jsonItem["_id"] = item.getID()
-            jsonItem["labels"] = labels = item_dict["labels"]
-            jsonItem["descriptions"] = item_dict["descriptions"]
-            jsonItem["claims"] = processClaims(claims)
+            jsonItem = wdItemToJson(item)
             if itemInCollection(jsonItem["_id"], collection) == False:
                 insertItem(jsonItem, collection)
         except (pwb.IsRedirectPage, pwb.NoPage):
