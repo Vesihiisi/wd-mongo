@@ -47,6 +47,15 @@ def processClaims(claims):
         claimsClean[claim] = claimList
     return claimsClean
 
+def itemInCollection(itemID, collection):
+    if collection.find({"_id" : itemID}).count() == 0:
+        return False
+    else:
+        return True
+
+def insertItem(jsonItem, collection):
+    collection.insert_one(jsonItem)
+
 def main():
     args = processArgs()
     collection = prepareCollection(args.database, args.collection)
@@ -64,8 +73,8 @@ def main():
             jsonItem["labels"] = labels
             jsonItem["descriptions"] = descriptions
             jsonItem["claims"] = claimsClean
-            if collection.find({"_id" : jsonItem["_id"]}).count() == 0:
-                post_id = collection.insert_one(jsonItem).inserted_id
+            if itemInCollection(jsonItem["_id"], collection) == False:
+                insertItem(jsonItem, collection)
         except (pwb.IsRedirectPage, pwb.NoPage):
             pass
 
