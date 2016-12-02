@@ -57,10 +57,10 @@ def insertItem(jsonItem, collection):
     collection.insert_one(jsonItem)
 
 def wdItemToJson(WDItem):
-    item_dict = item.get()
+    item_dict = WDItem.get()
     claims = item_dict["claims"]
     jsonItem = {}
-    jsonItem["_id"] = item.getID()
+    jsonItem["_id"] = WDItem.getID()
     jsonItem["labels"] = labels = item_dict["labels"]
     jsonItem["descriptions"] = item_dict["descriptions"]
     jsonItem["claims"] = processClaims(claims)
